@@ -126,6 +126,6 @@ if __name__ == '__main__':  # Main loop which loops through the complete respons
     # print(df.dropNA())
     del df[0]
     df.drop(0, inplace=True, axis=0)
-    df.to_excel('Test.xlsx')
+    df.to_excel('WKSubjects.xlsx')
     print("Exported to Excel Successfully")
 
