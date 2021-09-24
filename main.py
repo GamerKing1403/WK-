@@ -29,7 +29,27 @@ def request(url):  # This function requests the wk server for info.
     return json.loads(requests.get(url=url, headers=headers).content.decode('utf-8'))
 
 
+def CalcHalf(typ, lvl, comp, kanjilvl=None):  # This Function is for Calculating the Half in which The vocab belongs.
+    if typ == 'vocabulary':  # If its a vocab it will go through the comp kanji's and re-run this function.
+        for ids in comp:
+            res = request(f'https://api.wanikani.com/v2/subjects/{ids}')
+            result = CalcHalf('kanji', lvl, res['data']['component_subject_ids'], res['data']['level'])
+            if result == 2:
+                return 2
+
+    elif typ == 'kanji':  # If its a kanji it will go through the specific radicals to check the level of each.
+        if lvl == kanjilvl:
+            for ids in comp:
+                res = request(f'https://api.wanikani.com/v2/subjects/{ids}')
+                if lvl == res['data']['level']:
+                    return 2
+                else:
+                    return 1
+    return 0
+
+
 if __name__ == '__main__':  # Main loop which loops through the complete response and gets the required things in df.
+    Initialization()
     for i in range(0, 10000, 1000):  # Loop through different pages of The result.
 
         response = request(f'https://api.wanikani.com/v2/subjects?page_after_id={i}')
@@ -49,8 +69,13 @@ if __name__ == '__main__':  # Main loop which loops through the complete respons
                 else:
                     components = None
 
+                #  This is the code for getting the Half in which the Kanji or Vocab will be.
+
+                half = CalcHalf(obj, level, components, level)
+
                 #  Creating a Dict to append to the dataframe.
-                compData = {'ID': identity, 'Object': obj, 'Level': level, 'Char': char, 'Components': components}
+                compData = {'ID': identity, 'Object': obj, 'Level': level, 'Char': char, 'Components': components,
+                            'Half': half}
                 df = df.append(compData, ignore_index=True)
 
             except IndexError:
