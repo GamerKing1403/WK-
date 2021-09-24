@@ -7,6 +7,7 @@ import pandas as pd
 headers = None
 df = None
 CompRes = []
+# This line Will make a cache of any request is being made.
 requests_cache.install_cache(cache_name='github_cache', backend='sqlite', expire_after=180)
 
 
@@ -35,7 +36,7 @@ def request():  # This function requests the wk server for info.
     return CompRes
 
 
-def reqResponse(identity):
+def reqResponse(identity):  # this Function is for getting the subject for a specified id from the cached data base.
     global CompRes
     res = -1
     if identity < 1000:
@@ -64,20 +65,29 @@ def reqResponse(identity):
 def CalcHalf(identity, typ, lvl, comp, kanjilvl=None):
     # This Function is for Calculating the Half in which The vocab belongs.
     res = reqResponse(identity)
-
+    check = 0
     if typ == 'vocabulary':  # If its a vocab it will go through the comp kanji's and re-run this function.
         for ids in comp:
             result = CalcHalf(ids, 'kanji', lvl, res['data']['component_subject_ids'], res['data']['level'])
-            if result == 2:
+            if result == 1:
                 return 2
+            elif result == 2:
+                return 1
+            elif result == -1:
+                check += -1
+        if -len(comp) == check:
+            return 3
 
     elif typ == 'kanji':  # If its a kanji it will go through the specific radicals to check the level of each.
         if lvl == kanjilvl:
             for ids in comp:
+                res = reqResponse(ids)
                 if lvl == res['data']['level']:
                     return 2
                 else:
                     return 1
+        else:
+            return -1
     return 0
 
 
@@ -96,7 +106,7 @@ if __name__ == '__main__':  # Main loop which loops through the complete respons
                 if obj != 'radical':
                     components = subject['data']['component_subject_ids']
                 else:
-                    components = None
+                    components = 0
 
                 #  This is the code for getting the Half in which the Kanji or Vocab will be.
 
@@ -113,4 +123,9 @@ if __name__ == '__main__':  # Main loop which loops through the complete respons
                 continue
         print('#'*(i+1) + '-'*(9-i))
     # df.to_excel('test.xlsx')  # Exports the data to an Excel File.
-    print(df.tail())
+    # print(df.dropNA())
+    del df[0]
+    df.drop(0, inplace=True, axis=0)
+    df.to_excel('Test.xlsx')
+    print("Exported to Excel Successfully")
+

@@ -1,1 +1,1 @@
-pip install --upgrade pandas requests-cache requests
+pip install --upgrade pandas requests-cache requests openpyxl
