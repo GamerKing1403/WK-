@@ -3,7 +3,19 @@ import json
 import pandas as pd
 
 
-headers = {"Authorization": "Bearer b77ec7da-663a-40a6-a2f3-ef92d9b2ac24"}
+def Authorization():
+    with open('Auth.txt', 'r+') as authFile:
+        if authFile.readline() == '':
+            api = input('Please Enter your WaniKani Api v2:- ')
+            authFile.write(api)
+        else:
+            pass
+
+
+Authorization()
+with open('Auth.txt', 'r') as apiFile:
+    api = apiFile.readline()
+headers = {"Authorization": "Bearer "+api}
 df = pd.DataFrame({''})
 
 for i in range(0, 10000, 1000):
